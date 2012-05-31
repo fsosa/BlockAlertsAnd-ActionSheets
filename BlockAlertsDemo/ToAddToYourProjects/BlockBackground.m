@@ -48,9 +48,7 @@ static BlockBackground *_sharedInstance = nil;
 }
 
 - (void)setRotation:(NSNotification*)notification
-{
-    if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad) return;
-    
+{    
     UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
     
     CGRect orientationFrame = [UIScreen mainScreen].bounds;
@@ -94,6 +92,9 @@ static BlockBackground *_sharedInstance = nil;
     
     self.transform = CGAffineTransformMakeRotation(rotateAngle);
     self.center = newCenter;
+    
+    [self setNeedsLayout];
+    [self layoutSubviews];
 }
 
 - (id)init

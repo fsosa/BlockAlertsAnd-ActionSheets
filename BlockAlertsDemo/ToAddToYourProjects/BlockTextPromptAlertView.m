@@ -77,10 +77,13 @@
 }
 - (void)show {
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
+                                             selector:@selector(keyboardWillChange:)
                                                  name:UIKeyboardWillShowNotification
                                                object:nil];
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillChange:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
     [super show];
     
     [[NSNotificationCenter defaultCenter] addObserver:textField selector:@selector(becomeFirstResponder) name:@"AlertViewFinishedAnimations" object:nil];
@@ -90,25 +93,53 @@
     [super dismissWithClickedButtonIndex:buttonIndex animated:animated];
     
     [[NSNotificationCenter defaultCenter] removeObserver:textField];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 }
 
-- (void)keyboardWillShow:(NSNotification *)notification {
-    CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
-    
-    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+- (void)keyboardWillChange:(NSNotification *)notification {
+    CGRect keyboardFrame = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    CGFloat screenWidth, screenHeight;
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    if (UIInterfaceOrientationIsPortrait(orientation)) {
+        screenWidth = screenSize.width;
+        screenHeight = screenSize.height;
+    } else {
+        screenWidth = screenSize.height;
+        screenHeight = screenSize.width;
+    }
+    CGFloat keyboardHeight;
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait:
+            keyboardHeight = screenHeight - keyboardFrame.origin.y;
+            break;
+        case UIInterfaceOrientationPortraitUpsideDown:
+            keyboardHeight = keyboardFrame.size.height;
+            break;
+        case UIInterfaceOrientationLandscapeRight:
+            keyboardHeight = keyboardFrame.origin.x + keyboardFrame.size.width;
+            break;
+        case UIInterfaceOrientationLandscapeLeft:
+            keyboardHeight = screenHeight - keyboardFrame.origin.x;
+            break;
+        default:
+            keyboardHeight = 0;
+            break;
+    }
     __block CGRect frame = _view.frame;
     
-    if (frame.origin.y + frame.size.height > screenHeight - keyboardSize.height) {
-        
-        frame.origin.y = screenHeight - keyboardSize.height - frame.size.height;
-        
-        if (frame.origin.y < 0)
-            frame.origin.y = 0;
-        
-        [UIView animateWithDuration:0.3
+    frame.origin.x = floorf((screenWidth - frame.size.width) / 2);
+    frame.origin.y = floorf((screenHeight - keyboardHeight - frame.size.height) / 2);
+    if (frame.origin.y < 0)
+        frame.origin.y = 0;
+    if (frame.origin.y != _view.frame.origin.y) {
+        [UIView animateWithDuration:
+         [[[notification userInfo]objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]
                               delay:0.0
-                            options:UIViewAnimationCurveEaseOut
+                            options:
+         UIViewAnimationOptionBeginFromCurrentState |
+         [[[notification userInfo]objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]
                          animations:^{
                              _view.frame = frame;
                          } 

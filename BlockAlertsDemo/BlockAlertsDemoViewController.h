@@ -20,6 +20,6 @@
 - (IBAction)dismissKeyboard:(id)sender;
 - (IBAction)showTextPrompt:(id)sender;
 
-@property (retain, nonatomic) IBOutlet UITextField *testKeyboard;
+@property ( nonatomic) IBOutlet UITextField *testKeyboard;
 
 @end

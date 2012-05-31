@@ -19,7 +19,7 @@
 - (void)reduceAlphaIfEmpty;
 - (void)removeView:(UIView *)view;
 
-@property (nonatomic, retain) UIImage *backgroundImage;
+@property (nonatomic) UIImage *backgroundImage;
 @property (nonatomic, readwrite) BOOL vignetteBackground;
 
 @end

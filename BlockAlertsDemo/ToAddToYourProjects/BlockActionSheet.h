@@ -13,6 +13,7 @@
     UIView *_view;
     NSMutableArray *_blocks;
     CGFloat _height;
+    id _selfRetain;
 }
 
 @property (nonatomic, readonly) UIView *view;

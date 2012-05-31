@@ -10,6 +10,8 @@
     UIView *_view;
     NSMutableArray *_blocks;
     CGFloat _height;
+    
+    id _selfRetain;
 }
 
 + (BlockAlertView *)alertWithTitle:(NSString *)title message:(NSString *)message;
@@ -23,7 +25,7 @@
 - (void)show;
 - (void)dismissWithClickedButtonIndex:(NSInteger)buttonIndex animated:(BOOL)animated;
 
-@property (nonatomic, retain) UIImage *backgroundImage;
+@property (nonatomic) UIImage *backgroundImage;
 @property (nonatomic, readonly) UIView *view;
 @property (nonatomic, readwrite) BOOL vignetteBackground;
 

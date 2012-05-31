@@ -18,7 +18,7 @@ typedef BOOL(^TextFieldReturnCallBack)(BlockTextPromptAlertView *);
     NSInteger maxLength;
 }
 
-@property (nonatomic, retain) UITextField *textField;
+@property (nonatomic) UITextField *textField;
 
 + (BlockTextPromptAlertView *)promptWithTitle:(NSString *)title message:(NSString *)message defaultText:(NSString*)defaultText;
 + (BlockTextPromptAlertView *)promptWithTitle:(NSString *)title message:(NSString *)message defaultText:(NSString*)defaultText block:(TextFieldReturnCallBack) block;

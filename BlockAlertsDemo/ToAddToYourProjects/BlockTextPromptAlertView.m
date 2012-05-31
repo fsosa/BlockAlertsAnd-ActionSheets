@@ -98,39 +98,18 @@
 }
 
 - (void)keyboardWillChange:(NSNotification *)notification {
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+
     CGRect keyboardFrame = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-    CGFloat screenWidth, screenHeight;
-    CGSize screenSize = [UIScreen mainScreen].bounds.size;
-    if (UIInterfaceOrientationIsPortrait(orientation)) {
-        screenWidth = screenSize.width;
-        screenHeight = screenSize.height;
-    } else {
-        screenWidth = screenSize.height;
-        screenHeight = screenSize.width;
-    }
-    CGFloat keyboardHeight;
-    switch (orientation) {
-        case UIInterfaceOrientationPortrait:
-            keyboardHeight = screenHeight - keyboardFrame.origin.y;
-            break;
-        case UIInterfaceOrientationPortraitUpsideDown:
-            keyboardHeight = keyboardFrame.size.height;
-            break;
-        case UIInterfaceOrientationLandscapeRight:
-            keyboardHeight = keyboardFrame.origin.x + keyboardFrame.size.width;
-            break;
-        case UIInterfaceOrientationLandscapeLeft:
-            keyboardHeight = screenHeight - keyboardFrame.origin.x;
-            break;
-        default:
-            keyboardHeight = 0;
-            break;
-    }
+    // Convert from screen to window-local coordinates
+    keyboardFrame = [window convertRect:keyboardFrame fromWindow:nil];
+    // no need further conversion for now
+    // keyboardFrame = [[_view superview] convertRect:keyboardFrame fromView:window];
+    CGRect screenFrame = [window convertRect:[UIScreen mainScreen].bounds fromWindow:nil];
+
     __block CGRect frame = _view.frame;
-    
-    frame.origin.x = floorf((screenWidth - frame.size.width) / 2);
-    frame.origin.y = floorf((screenHeight - keyboardHeight - frame.size.height) / 2);
+    frame.origin.x = floorf((screenFrame.size.width - frame.size.width) / 2);
+    frame.origin.y = floorf((keyboardFrame.origin.y - frame.size.height) / 2);
     if (frame.origin.y < 0)
         frame.origin.y = 0;
     if (frame.origin.y != _view.frame.origin.y) {

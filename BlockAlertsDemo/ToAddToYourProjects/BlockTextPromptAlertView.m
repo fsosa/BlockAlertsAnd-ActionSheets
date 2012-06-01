@@ -77,10 +77,13 @@
 }
 - (void)show {
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
+                                             selector:@selector(keyboardWillChange:)
                                                  name:UIKeyboardWillShowNotification
                                                object:nil];
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillChange:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
     [super show];
     
     [[NSNotificationCenter defaultCenter] addObserver:textField selector:@selector(becomeFirstResponder) name:@"AlertViewFinishedAnimations" object:nil];
@@ -90,25 +93,32 @@
     [super dismissWithClickedButtonIndex:buttonIndex animated:animated];
     
     [[NSNotificationCenter defaultCenter] removeObserver:textField];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 }
 
-- (void)keyboardWillShow:(NSNotification *)notification {
-    CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
-    
-    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+- (void)keyboardWillChange:(NSNotification *)notification {
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+
+    CGRect keyboardFrame = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    // Convert from screen to window-local coordinates
+    keyboardFrame = [window convertRect:keyboardFrame fromWindow:nil];
+    // no need further conversion for now
+    // keyboardFrame = [[_view superview] convertRect:keyboardFrame fromView:window];
+    CGRect screenFrame = [window convertRect:[UIScreen mainScreen].bounds fromWindow:nil];
+
     __block CGRect frame = _view.frame;
-    
-    if (frame.origin.y + frame.size.height > screenHeight - keyboardSize.height) {
-        
-        frame.origin.y = screenHeight - keyboardSize.height - frame.size.height;
-        
-        if (frame.origin.y < 0)
-            frame.origin.y = 0;
-        
-        [UIView animateWithDuration:0.3
+    frame.origin.x = floorf((screenFrame.size.width - frame.size.width) / 2);
+    frame.origin.y = floorf((keyboardFrame.origin.y - frame.size.height) / 2);
+    if (frame.origin.y < 0)
+        frame.origin.y = 0;
+    if (frame.origin.y != _view.frame.origin.y) {
+        [UIView animateWithDuration:
+         [[[notification userInfo]objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue]
                               delay:0.0
-                            options:UIViewAnimationCurveEaseOut
+                            options:
+         UIViewAnimationOptionBeginFromCurrentState |
+         [[[notification userInfo]objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]
                          animations:^{
                              _view.frame = frame;
                          } 

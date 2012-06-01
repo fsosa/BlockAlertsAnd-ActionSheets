@@ -94,7 +94,6 @@ static BlockBackground *_sharedInstance = nil;
     self.center = newCenter;
     
     [self setNeedsLayout];
-    [self layoutSubviews];
 }
 
 - (id)init

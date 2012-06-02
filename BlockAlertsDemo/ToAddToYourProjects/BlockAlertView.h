@@ -33,7 +33,7 @@ typedef NSUInteger kAlertViewAnimationType;
 - (void) showWithAnimation:(kAlertViewAnimationType)_animationType;
 - (void)dismissWithClickedButtonIndex:(NSInteger)buttonIndex animated:(BOOL)animated;
 
-@property (nonatomic) UIImage *backgroundImage;
+@property (nonatomic, assign) UIImage *backgroundImage;
 @property (nonatomic, readonly) UIView *view;
 @property (nonatomic, readwrite) BOOL vignetteBackground;
 

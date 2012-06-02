@@ -106,28 +106,28 @@ static UIFont *buttonFont = nil;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - Public
 
-- (void)addButtonWithTitle:(NSString *)title color:(NSString*)color block:(void (^)())block 
+- (void)addButtonWithTitle:(NSString *)title image:(NSString*)imageName block:(void (^)())block 
 {
     [_blocks addObject:[NSArray arrayWithObjects:
                         block ? [block copy] : [NSNull null],
                         title,
-                        color,
+                        imageName,
                         nil]];
 }
 
 - (void)addButtonWithTitle:(NSString *)title block:(void (^)())block 
 {
-    [self addButtonWithTitle:title color:@"gray" block:block];
+    [self addButtonWithTitle:title image:kAlertDefaultButtonImage block:block];
 }
 
 - (void)setCancelButtonWithTitle:(NSString *)title block:(void (^)())block 
 {
-    [self addButtonWithTitle:title color:@"black" block:block];
+    [self addButtonWithTitle:title image:kAlertCancelButtonImage block:block];
 }
 
 - (void)setDestructiveButtonWithTitle:(NSString *)title block:(void (^)())block
 {
-    [self addButtonWithTitle:title color:@"red" block:block];
+    [self addButtonWithTitle:title image:kAlertDestructiveButtonImage block:block];
 }
 
 - (void)show
@@ -138,9 +138,9 @@ static UIFont *buttonFont = nil;
     {
         NSArray *block = [_blocks objectAtIndex:i];
         NSString *title = [block objectAtIndex:1];
-        NSString *color = [block objectAtIndex:2];
+        NSString *imageName = [block objectAtIndex:2];
 
-        UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"alert-%@-button.png", color]];
+        UIImage *image = [UIImage imageNamed:imageName];
         image = [image stretchableImageWithLeftCapWidth:(int)(image.size.width+1)>>1 topCapHeight:0];
         
         CGFloat maxHalfWidth = floorf((_view.bounds.size.width-kAlertViewBorder*3)*0.5);

@@ -50,6 +50,10 @@
 #define kAlertViewButtonShadowOffset    CGSizeMake(0, -1)
 
 #define kAlertViewBackground            @"alert-window.png"
+#define kAlertDefaultButtonImage		@"alert-black-button.png"
+#define kAlertCancelButtonImage			@"alert-gray-button.png"
+#define kAlertDestructiveButtonImage	@"alert-red-button.png"
+
 #define kAlertViewBackgroundCapHeight   38
 
 #endif

@@ -48,6 +48,7 @@ static UIFont *buttonFont = nil;
         CGRect frame = parentView.bounds;
         frame.origin.x = floorf((frame.size.width - background.size.width) * 0.5);
         frame.size.width = background.size.width;
+		animationType=kAlertViewAnimationSlideFromTop;
         
         _view = [[UIView alloc] initWithFrame:frame];
         _blocks = [[NSMutableArray alloc] init];
@@ -106,28 +107,33 @@ static UIFont *buttonFont = nil;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - Public
 
-- (void)addButtonWithTitle:(NSString *)title color:(NSString*)color block:(void (^)())block 
+- (void)addButtonWithTitle:(NSString *)title image:(NSString*)imageName block:(void (^)())block 
 {
     [_blocks addObject:[NSArray arrayWithObjects:
                         block ? [block copy] : [NSNull null],
                         title,
-                        color,
+                        imageName,
                         nil]];
 }
 
 - (void)addButtonWithTitle:(NSString *)title block:(void (^)())block 
 {
-    [self addButtonWithTitle:title color:@"gray" block:block];
+    [self addButtonWithTitle:title image:kAlertDefaultButtonImage block:block];
 }
 
 - (void)setCancelButtonWithTitle:(NSString *)title block:(void (^)())block 
 {
-    [self addButtonWithTitle:title color:@"black" block:block];
+    [self addButtonWithTitle:title image:kAlertCancelButtonImage block:block];
 }
 
 - (void)setDestructiveButtonWithTitle:(NSString *)title block:(void (^)())block
 {
-    [self addButtonWithTitle:title color:@"red" block:block];
+    [self addButtonWithTitle:title image:kAlertDestructiveButtonImage block:block];
+}
+
+-(void) showWithAnimation:(kAlertViewAnimationType)_animationType{
+	animationType=_animationType;
+	[self show];
 }
 
 - (void)show
@@ -138,9 +144,9 @@ static UIFont *buttonFont = nil;
     {
         NSArray *block = [_blocks objectAtIndex:i];
         NSString *title = [block objectAtIndex:1];
-        NSString *color = [block objectAtIndex:2];
+        NSString *imageName = [block objectAtIndex:2];
 
-        UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"alert-%@-button.png", color]];
+        UIImage *image = [UIImage imageNamed:imageName];
         image = [image stretchableImageWithLeftCapWidth:(int)(image.size.width+1)>>1 topCapHeight:0];
         
         CGFloat maxHalfWidth = floorf((_view.bounds.size.width-kAlertViewBorder*3)*0.5);
@@ -257,28 +263,53 @@ static UIFont *buttonFont = nil;
     [BlockBackground sharedInstance].vignetteBackground = _vignetteBackground;
     [[BlockBackground sharedInstance] addToMainWindow:_view];
 
-    __block CGPoint center = _view.center;
-    center.y = floorf([BlockBackground sharedInstance].bounds.size.height * 0.5) + kAlertViewBounce;
     
-    [UIView animateWithDuration:0.4
-                          delay:0.0
-                        options:UIViewAnimationCurveEaseOut
-                     animations:^{
-                         [BlockBackground sharedInstance].alpha = 1.0f;
-                         _view.center = center;
-                     } 
-                     completion:^(BOOL finished) {
-                         [UIView animateWithDuration:0.1
-                                               delay:0.0
-                                             options:0
-                                          animations:^{
-                                              center.y -= kAlertViewBounce;
-                                              _view.center = center;
-                                          } 
-                                          completion:^(BOOL finished) {
-                                              [[NSNotificationCenter defaultCenter] postNotificationName:@"AlertViewFinishedAnimations" object:nil];
-                                          }];
-                     }];
+	switch (animationType) {
+			
+  		case kAlertViewAnimationSlideFromTop:{
+			__block CGPoint center = _view.center;
+			center.y = floorf([BlockBackground sharedInstance].bounds.size.height * 0.5) + kAlertViewBounce;
+			[UIView animateWithDuration:0.4
+								  delay:0.0
+								options:UIViewAnimationCurveEaseOut
+							 animations:^{
+								 [BlockBackground sharedInstance].alpha = 1.0f;
+								 _view.center = center;
+							 } 
+							 completion:^(BOOL finished) {
+								 [UIView animateWithDuration:0.1
+													   delay:0.0
+													 options:0
+												  animations:^{
+													  center.y -= kAlertViewBounce;
+													  _view.center = center;
+												  } 
+												  completion:^(BOOL finished) {
+													  [[NSNotificationCenter defaultCenter] postNotificationName:@"AlertViewFinishedAnimations" object:nil];
+												  }];
+							 }];
+		}
+		break;
+		case kAlertViewAnimationFadeIn: {
+			_view.alpha=0.0;
+			__block CGPoint center = _view.center;
+			center.y = floorf([BlockBackground sharedInstance].bounds.size.height * 0.5);
+			 _view.center = center;
+			[UIView animateWithDuration:0.4
+								  delay:0.0
+								options:UIViewAnimationCurveEaseOut
+							 animations:^{
+								 [BlockBackground sharedInstance].alpha = 1.0f;
+								 _view.alpha = 1.0f;
+							 } 
+							 completion:^(BOOL finished) {
+								[[NSNotificationCenter defaultCenter] postNotificationName:@"AlertViewFinishedAnimations" object:nil];
+							 }];
+		}
+		default:
+			break;
+	}
+
     _selfRetain = self;
 }
 
@@ -295,35 +326,56 @@ static UIFont *buttonFont = nil;
     
     if (animated)
     {
-        [UIView animateWithDuration:0.1
-                              delay:0.0
-                            options:0
-                         animations:^{
-                             CGPoint center = _view.center;
-                             center.y += 20;
-                             _view.center = center;
-                         } 
-                         completion:^(BOOL finished) {
-                             [UIView animateWithDuration:0.4
-                                                   delay:0.0 
-                                                 options:UIViewAnimationCurveEaseIn
-                                              animations:^{
-                                                  CGRect frame = _view.frame;
-                                                  frame.origin.y = -frame.size.height;
-                                                  _view.frame = frame;
-                                              } 
-                                              completion:^(BOOL finished) {
-                                                  
-                                                  [UIView animateWithDuration:0.1 animations:^{
-                                                      [[BlockBackground sharedInstance] reduceAlphaIfEmpty];
-                                                  }
-                                                                   completion:^(BOOL finished) {
-                                                                       [[BlockBackground sharedInstance] removeView:_view];
-                                                                       _view = nil;
-                                                                       _selfRetain = nil;
-                                                                   }];
-                                              }];
-                         }];
+		switch (animationType) {
+			case kAlertViewAnimationSlideFromTop:
+			default:
+				{
+					[UIView animateWithDuration:0.1
+									  delay:0.0
+									options:0
+								 animations:^{
+									 CGPoint center = _view.center;
+									 center.y += 20;
+									 _view.center = center;
+								 } 
+								 completion:^(BOOL finished) {
+									 [UIView animateWithDuration:0.4
+														   delay:0.0 
+														 options:UIViewAnimationCurveEaseIn
+													  animations:^{
+														  CGRect frame = _view.frame;
+														  frame.origin.y = -frame.size.height;
+														  _view.frame = frame;
+													  } 
+													  completion:^(BOOL finished) {
+														  
+														  [UIView animateWithDuration:0.1 animations:^{
+															  [[BlockBackground sharedInstance] reduceAlphaIfEmpty];
+														  }
+																		   completion:^(BOOL finished) {
+																			   [[BlockBackground sharedInstance] removeView:_view];
+																			   _view = nil;
+																			   _selfRetain = nil;
+																		   }];
+													  }];
+								 }];
+				}
+				break;
+			case kAlertViewAnimationFadeIn:
+			{
+
+					  [UIView animateWithDuration:0.4 animations:^{
+						  [[BlockBackground sharedInstance] reduceAlphaIfEmpty];
+						  _view.alpha=0.0f;
+					  }
+									   completion:^(BOOL finished) {
+										   [[BlockBackground sharedInstance] removeView:_view];
+										   _view = nil;
+										   _selfRetain = nil;
+					   }];
+			}
+		}
+
     }
     else
     {

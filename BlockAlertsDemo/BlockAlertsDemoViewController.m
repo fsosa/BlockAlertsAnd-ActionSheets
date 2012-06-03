@@ -36,6 +36,19 @@
     }];
     [alert show];
 }
+- (IBAction)showAlertFadeIn:(id)sender {
+	BlockAlertView *alert = [BlockAlertView alertWithTitle:@"Alert Title" message:@"This is a very long message, designed just to show you how smart this class is"];
+    
+    [alert setCancelButtonWithTitle:@"Cancel" block:nil];
+    [alert setDestructiveButtonWithTitle:@"Kill!" block:nil];
+    [alert addButtonWithTitle:@"Show Action Sheet on top" block:^{
+        [self showActionSheet:nil];
+    }];
+    [alert addButtonWithTitle:@"Show another alert" block:^{
+        [self showAlert:nil];
+    }];
+	[alert showWithAnimation:kAlertViewAnimationFadeIn];
+}
 
 - (IBAction)showActionSheet:(id)sender
 {

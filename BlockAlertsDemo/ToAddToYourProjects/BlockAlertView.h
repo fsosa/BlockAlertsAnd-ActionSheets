@@ -5,12 +5,19 @@
 
 #import <UIKit/UIKit.h>
 
+enum {
+    kAlertViewAnimationSlideFromTop = 1, // Default, slide from top
+    kAlertViewAnimationFadeIn,	// Fade in
+};
+typedef NSUInteger kAlertViewAnimationType;
+
 @interface BlockAlertView : NSObject {
 @protected
     UIView *_view;
     NSMutableArray *_blocks;
     CGFloat _height;
-    
+    NSUInteger animationType;
+	
     id _selfRetain;
 }
 
@@ -23,9 +30,10 @@
 - (void)addButtonWithTitle:(NSString *)title block:(void (^)())block;
 
 - (void)show;
+- (void) showWithAnimation:(kAlertViewAnimationType)_animationType;
 - (void)dismissWithClickedButtonIndex:(NSInteger)buttonIndex animated:(BOOL)animated;
 
-@property (nonatomic) UIImage *backgroundImage;
+@property (nonatomic, assign) UIImage *backgroundImage;
 @property (nonatomic, readonly) UIView *view;
 @property (nonatomic, readwrite) BOOL vignetteBackground;
 
